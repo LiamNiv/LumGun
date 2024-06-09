@@ -204,7 +204,8 @@ class Player(pygame.sprite.Sprite):
         Args:
             bullet_group (Group): the sprite group containing all of the bullets
         """
-        if pygame.sprite.spritecollide(self, bullet_group, True, pygame.sprite.collide_mask):
+        # makes sure the player being hit is only the main one, enemy health is sent
+        if pygame.sprite.spritecollide(self, bullet_group, True, pygame.sprite.collide_mask) and self.isUser:
             if self.health != 0:
                 self.health -= 1
 
