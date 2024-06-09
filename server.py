@@ -221,9 +221,16 @@ print("Waiting for a connection, Server Started")
 rsa_helper = RSAHelper()
 
 players_online = 0
+# list for the original spawn positions
 spawn_pos = [(200, 250, 200, 200, False, 30), (800, 250, 200, 300, False, 30)]
+# list for storing the current player positions
 pos = [spawn_pos[0], spawn_pos[1]]
+# list for storing the player's usernames
 player_usernames = ['', '']
+# list for tracking how many shots a player shot, 
+# have to use it in case two messages are received
+# for the same player in a row
+bullets_shot = [0, 0]
 
 # tracking the connections
 connections = [None, None]
@@ -383,8 +390,22 @@ def threaded_client(conn, player):
                 # storing the players position into the pos list
                 pos[player] = data
 
+            # if a player shot a shot, add one to his shots meant for transfer
+            if data[4]:
+                bullets_shot[player] += 1
+
             # setting the reply to be the other players position
-            reply = pos[other(player)]
+            # initializing variable for "should the other player be shooting?"
+            other_player_shooting = False
+
+            # updating the isShooting variable for the other player
+            if bullets_shot[other(player)] > 0:
+                other_player_shooting = True
+                bullets_shot[other(player)] -= 1
+
+            # sending a response with all of the detail, inserting the shooting bool in the middle
+            reply = (*pos[other(player)][0:4],
+                     other_player_shooting, pos[other(player)][5])
 
             # server prints information
             print(f"Received from player {player + 1}: ", data)
@@ -404,6 +425,8 @@ def threaded_client(conn, player):
     pos[player] = spawn_pos[player]
     # resetting the username
     player_usernames[player] = ''
+    # resetting the count of the player
+    bullets_shot[player] = 0
     # clearing connection
     connections[player] = None
     aes_lst[player] = None
