@@ -183,13 +183,13 @@ pygame.display.quit()
 ==============================================
 ==============================================
 
-Server working
+Server working - functioning as server
 
 ==============================================
 ==============================================
 """
 
-server = "192.168.10.128"
+accept_all_connections_ip = "0.0.0.0"
 port = 5555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -211,7 +211,7 @@ def other(p):
 
 
 try:
-    s.bind((server, port))
+    s.bind((accept_all_connections_ip, port))
 except socket.error as e:
     str(e)
 
@@ -323,14 +323,12 @@ def threaded_client(conn, player):
         else:
             # if signing up was successful
             if signUp(data[0], data[1]):
-                # send True
                 conn.sendall(make_cipheriv(
                     aes_lst[player].aes_encrypt(make_ans(True))))
                 # go to game loop
                 print(f"Sending to player {player + 1}: True")
                 break
             else:
-                # send False
                 conn.sendall(make_cipheriv(
                     aes_lst[player].aes_encrypt(make_ans(False))))
                 # redo the loop
