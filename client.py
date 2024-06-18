@@ -108,7 +108,7 @@ class Player(pygame.sprite.Sprite):
         """
         self.username = username
 
-    def face_mouse(self, mouse_pos):
+    def face_mouse(self, angle_info):
         """calculates the difference between the players position and the mouse, 
         and applies the rotation needed for the player to face the mouse.
 
@@ -116,12 +116,17 @@ class Player(pygame.sprite.Sprite):
             mouse_pos (tuple): containing the mouse x and y position
         """
 
+        # if the angle info given is the mouse position
         player_pos = self.rect.center
-        # distance between the player and the mouse
-        x_dist = mouse_pos[0] - player_pos[0] + camera_group.offset[0]
-        y_dist = -(mouse_pos[1] - player_pos[1] + camera_group.offset[1])
-        # updating the angle of the player, using tan
-        self.angle = math.degrees(math.atan2(y_dist, x_dist))
+        if isinstance(angle_info, tuple):
+            # distance between the player and the mouse
+            x_dist = angle_info[0] - player_pos[0] + camera_group.offset[0]
+            y_dist = -(angle_info[1] - player_pos[1] + camera_group.offset[1])
+            # updating the angle of the player, using tan
+            self.angle = math.degrees(math.atan2(y_dist, x_dist))
+        # if its the angle (for enemy)
+        else:
+            self.angle = angle_info
         # rotating the image
         self.image = pygame.transform.rotate(
             self.original_image, self.angle - 90)
@@ -222,18 +227,20 @@ class Player(pygame.sprite.Sprite):
 
         self.rect.centerx = spawn_pos[0]
         self.rect.centery = spawn_pos[1]
-        self.health = spawn_pos[5]
+        self.health = spawn_pos[4]
 
-    def update(self, mouse_pos):
+    def update(self, angle_info):
         """updates the player using all of the necessary methods
 
         Args:
             mouse_pos (tuple): the mouse position
         """
 
+
+
         self.input()
         self.rect.center += self.direction * self.speed
-        self.face_mouse(mouse_pos)
+        self.face_mouse(angle_info)
         self.border_collision()
         self.obstacle_collision()
         self.bullet_collision(bullets)
@@ -620,24 +627,23 @@ while True:
         # cant send if the player is dead
         if player.sprite.health != 0:
             enemy_pos = read(aes_helper.aes_decrypt(*read_cipheriv(n.send(make_cipheriv(aes_helper.aes_encrypt(make_pos((player.sprite.rect.centerx, player.sprite.rect.centery,
-                                                                                                                         pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[
-                                                                                                                             1],
+                                                                                                                         player.sprite.angle,
                                                                                                                          click, player.sprite.health))))))))
 
         # updating enemy's position and health
         enemy.sprite.rect.centerx = enemy_pos[0]
         enemy.sprite.rect.centery = enemy_pos[1]
-        enemy.sprite.health = enemy_pos[5]
+        enemy.sprite.health = enemy_pos[4]
 
         # if information is delivered about an enemy's name, save it
-        if len(enemy_pos) > 6:
-            enemy.sprite.username = enemy_pos[6]
+        if len(enemy_pos) > 5:
+            enemy.sprite.username = enemy_pos[5]
 
         # general color to fill the screen
         screen.fill('#F7D9B4')
 
         # check whether to add bullets depending on shooting status of enemy
-        if enemy_pos[4]:
+        if enemy_pos[3]:
             bullets.add(enemy.sprite.create_bullet())
 
         # updates
@@ -648,8 +654,7 @@ while True:
         player.update(pygame.mouse.get_pos())
 
         # sends mouse cords as the enemy mouse cords from their pov plus add the difference between the players
-        enemy.update(
-            (enemy_pos[2] - (player.sprite.rect.centerx - enemy_pos[0]), enemy_pos[3] + enemy_pos[1] - player.sprite.rect.centery))
+        enemy.update(enemy_pos[2])
     else:
         """ ==== game is NOT active ==== """
 
@@ -674,8 +679,7 @@ while True:
                         # changes game state to on because details got approved
                         game_active = True
                         enemy_pos = read(aes_helper.aes_decrypt(*read_cipheriv(n.send(make_cipheriv(aes_helper.aes_encrypt(make_pos((player.sprite.rect.centerx, player.sprite.rect.centery,
-                                                                                                                                     pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[
-                                                                                                                                         1],
+                                                                                                                                     player.sprite.angle,
                                                                                                                                      click, player.sprite.health))))))))
                         player.sprite.username = username
                     # if the details are not good
@@ -701,8 +705,7 @@ while True:
                         # changes game state to on because details got approved
                         game_active = True
                         enemy_pos = read(aes_helper.aes_decrypt(*read_cipheriv(n.send(make_cipheriv(aes_helper.aes_encrypt(make_pos((player.sprite.rect.centerx, player.sprite.rect.centery,
-                                                                                                                                     pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[
-                                                                                                                                         1],
+                                                                                                                                     player.sprite.angle,
                                                                                                                                      click, player.sprite.health))))))))
                         player.sprite.username = username
                     # sign up request is negative

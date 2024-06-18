@@ -1,7 +1,7 @@
 """
 general protocol headers
 1: request to log in or sign up (username, password, isTryingToLogIn)
-2: player game status (pos_x, posy, mouse_pos_x, mouse_pos_y, isShooting, health)
+2: player game status (pos_x, posy, angle, isShooting, health)
 3: an answer to a request to log in (isValid)
 4: player game status (like 2) + enemy's name 
 5: this digit simply marks the player requesting his original spawn position from the server, will not be stripped, only '5' will be sent
@@ -102,12 +102,12 @@ def read_pos(data):
     """
     try:
         data = data.split(",")
-        if data[4] == "True":
-            return int(data[0]), int(data[1]), int(data[2]), int(data[3]), True, int(data[5])
+        if data[3] == "True":
+            return int(data[0]), int(data[1]), int(float(data[2])), True, int(data[4])
         else:
-            return int(data[0]), int(data[1]), int(data[2]), int(data[3]), False, int(data[5])
+            return int(data[0]), int(data[1]), int(float(data[2])), False, int(data[4])
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"An error occurred: {e} ===1===")
         return 'Protocol Fail'
 
 # makes  data of player's game position and status from string
@@ -126,12 +126,12 @@ def make_pos(data):
     """
 
     try:
-        if data[4]:
-            return '2' + str(data[0]) + "," + str(data[1]) + "," + str(data[2]) + "," + str(data[3]) + "," + "True" + ',' + str(data[5])
+        if data[3]:
+            return f'2{str(data[0])},{str(data[1])},{str(data[2])},True,{str(data[4])}'
         else:
-            return '2' + str(data[0]) + "," + str(data[1]) + "," + str(data[2]) + "," + str(data[3]) + "," + "False" + ',' + str(data[5])
+            return f'2{str(data[0])},{str(data[1])},{str(data[2])},False,{str(data[4])}'
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"An error occurred: {e} ===2===")
         return 'Protocol Fail'
 
 
@@ -194,17 +194,17 @@ def read_name(data):
         data (string): all of the players position attributes divided by "," + his username
 
     Returns:
-        tuple: (int) pos_x, (int) pos_y, (int) mouse_pos_x, (int) mouse_pos_y,
+        tuple: (int) pos_x, (int) pos_y, (int) angle,
         (bool) isShooting, (int) health, (string) username
     """
     try:
         data = data.split(",")
-        if data[4] == "True":
-            return int(data[0]), int(data[1]), int(data[2]), int(data[3]), True, int(data[5]), data[6]
+        if data[3] == "True":
+            return int(data[0]), int(data[1]), int(float(data[2])), True, int(data[4]), data[5]
         else:
-            return int(data[0]), int(data[1]), int(data[2]), int(data[3]), False, int(data[5]), data[6]
+            return int(data[0]), int(data[1]), int(float(data[2])), False, int(data[4]), data[5]
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"An error occurred: {e} ===3===")
         return 'Protocol Fail'
 
 # making string of other persons name + game status
@@ -214,20 +214,20 @@ def make_name(data):
     """converts data in tuple about the players position and username to a protocol string
 
     Args:
-        tuple: (int) pos_x, (int) pos_y, (int) mouse_pos_x, (int) mouse_pos_y, (bool) isShooting, (int) health, (string) username
+        tuple: (int) pos_x, (int) pos_y, angle, (bool) isShooting, (int) health, (string) username
 
     Returns:
         data (string): all of the players position attributes and username divided by "," + a "4" on the start
     """
     try:
-        if data[4]:
-            ret = f"4{data[0]},{data[1]},{data[2]},{data[3]},True,{data[5]},{data[6]}"
+        if data[3]:
+            ret = f"4{data[0]},{data[1]},{data[2]},True,{data[4]},{data[5]}"
             return ret
         else:
-            ret = f"4{data[0]},{data[1]},{data[2]},{data[3]},False,{data[5]},{data[6]}"
+            ret = f"4{data[0]},{data[1]},{data[2]},False,{data[4]},{data[5]}"
             return ret
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"An error occurred: {e} ===4===")
         return 'Protocol Fail'
 
 

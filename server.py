@@ -222,7 +222,7 @@ rsa_helper = RSAHelper()
 
 players_online = 0
 # list for the original spawn positions
-spawn_pos = [(200, 250, 200, 200, False, 30), (800, 250, 200, 300, False, 30)]
+spawn_pos = [(200, 250, 0, False, 30), (800, 250, 0, False, 30)]
 # list for storing the current player positions
 pos = [spawn_pos[0], spawn_pos[1]]
 # list for storing the player's usernames
@@ -389,7 +389,7 @@ def threaded_client(conn, player):
                 pos[player] = data
 
             # if a player shot a shot, add one to his shots meant for transfer
-            if data[4]:
+            if data[3]:
                 bullets_shot[player] += 1
 
             # setting the reply to be the other players position
@@ -402,8 +402,8 @@ def threaded_client(conn, player):
                 bullets_shot[other(player)] -= 1
 
             # sending a response with all of the detail, inserting the shooting bool in the middle
-            reply = (*pos[other(player)][0:4],
-                     other_player_shooting, pos[other(player)][5])
+            reply = (*pos[other(player)][0:3],
+                     other_player_shooting, pos[other(player)][4])
 
             # server prints information
             print(f"Received from player {player + 1}: ", data)
