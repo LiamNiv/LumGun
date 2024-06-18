@@ -187,7 +187,7 @@ def make_ans(data):
 # reading enemy's name and game status from string
 
 
-def read_name(data):
+def read_sub_full_pos(data):
     """converts string data about the players position and username to individual variables
 
     Args:
@@ -210,7 +210,7 @@ def read_name(data):
 # making string of other persons name + game status
 
 
-def make_name(data):
+def make_sub_full_pos(data):
     """converts data in tuple about the players position and username to a protocol string
 
     Args:
@@ -221,15 +221,30 @@ def make_name(data):
     """
     try:
         if data[3]:
-            ret = f"4{data[0]},{data[1]},{data[2]},True,{data[4]},{data[5]}"
+            ret = f"{data[0]},{data[1]},{data[2]},True,{data[4]},{data[5]}"
             return ret
         else:
-            ret = f"4{data[0]},{data[1]},{data[2]},False,{data[4]},{data[5]}"
+            ret = f"{data[0]},{data[1]},{data[2]},False,{data[4]},{data[5]}"
             return ret
     except Exception as e:
         print(f"An error occurred: {e} ===4===")
         return 'Protocol Fail'
 
+
+def read_full_pos(data):
+    try:
+        data = data.split(".")
+        full_details_list = []
+        for sub_name in data:
+            full_details_list.append(read_sub_full_pos(sub_name))
+        return full_details_list
+    except Exception as e:
+        print(f"An error occurred: {e} ===5===")
+        return 'Protocol Fail'
+    
+
+def make_full_pos(data):
+    return f'{make_sub_full_pos(data[0])}.{make_sub_full_pos(data[1])}.{make_sub_full_pos(data[2])}'
 
 """ ==== 7 ====="""
 
