@@ -24,7 +24,7 @@ def read(data):
         elif first_letter == '3':
             return read_ans(data)
         elif first_letter == '4':
-            return read_name(data)
+            return read_full_pos(data)
         elif first_letter == '5':
             return '5'
         elif first_letter == '6':
@@ -244,7 +244,7 @@ def read_full_pos(data):
     
 
 def make_full_pos(data):
-    return f'{make_sub_full_pos(data[0])}.{make_sub_full_pos(data[1])}.{make_sub_full_pos(data[2])}'
+    return f'4{make_sub_full_pos(data[0])}.{make_sub_full_pos(data[1])}.{make_sub_full_pos(data[2])}'
 
 """ ==== 7 ====="""
 

@@ -349,7 +349,7 @@ class CameraGroup(pygame.sprite.Group):
         self.offset.x = target.sprite.rect.centerx - self.half_w
         self.offset.y = target.sprite.rect.centery - self.half_h
 
-    def custom_draw(self, player, enemy):
+    def custom_draw(self, player, enemies):
         """
         this method uses the offset in order to create the illusion of
         a camera following the player around, by moving everything around him
@@ -372,9 +372,22 @@ class CameraGroup(pygame.sprite.Group):
         player_offset = player.sprite.rect.topleft - self.offset
         self.display_surface.blit(player.sprite.image, player_offset)
 
-        # blitting enemy
-        enemy_offset = enemy.sprite.rect.topleft - self.offset
-        self.display_surface.blit(enemy.sprite.image, enemy_offset)
+        
+        for enemy in enemies:
+            # blitting enemy
+            enemy_offset = enemy.sprite.rect.topleft - self.offset
+            self.display_surface.blit(enemy.sprite.image, enemy_offset)
+
+            # blitting enemy health
+            enemy_center_offset = enemy.sprite.rect.center - self.offset
+            self.display_surface.blit(enemy.sprite.health_bar_background,
+                                    (enemy_center_offset[0] - 15, enemy_center_offset[1] - 22))
+            self.display_surface.blit(enemy.sprite.health_bar_health,
+                                    (enemy_center_offset[0] - 15, enemy_center_offset[1] - 22))
+            
+            # blitting enemy username
+            self.display_surface.blit(enemy.sprite.username_surf, (
+            enemy_center_offset[0] - enemy.sprite.username_rect.w//2, enemy_center_offset[1] - 32))
 
         # blitting all of the obstacles on the map
         for sprite in self.sprites():
@@ -388,20 +401,11 @@ class CameraGroup(pygame.sprite.Group):
         self.display_surface.blit(player.sprite.health_bar_health,
                                   (player_center_offset[0] - 15, player_center_offset[1] - 22))
 
-        # blitting enemy health
-        enemy_center_offset = enemy.sprite.rect.center - self.offset
-        self.display_surface.blit(enemy.sprite.health_bar_background,
-                                  (enemy_center_offset[0] - 15, enemy_center_offset[1] - 22))
-        self.display_surface.blit(enemy.sprite.health_bar_health,
-                                  (enemy_center_offset[0] - 15, enemy_center_offset[1] - 22))
-
         # blitting player username
         self.display_surface.blit(player.sprite.username_surf, (
             player_center_offset[0] - player.sprite.username_rect.w//2, player_center_offset[1] - 32))
 
-        # blitting enemy username
-        self.display_surface.blit(enemy.sprite.username_surf, (
-            enemy_center_offset[0] - enemy.sprite.username_rect.w//2, enemy_center_offset[1] - 32))
+
 
 
 class Button(pygame.sprite.Sprite):
@@ -467,22 +471,34 @@ s1 = Slash((600, 300), camera_group)
 s2 = Slash((400, 200), camera_group)
 c1 = Circle((500, 250), camera_group)
 
+random_pos = read(n.getPos())
+
 # initializing player
 player = pygame.sprite.GroupSingle()
-start_pos1 = read(n.getPos())
-player.add(Player((start_pos1[0], start_pos1[1]), True))
+player.add(Player((random_pos[0], random_pos[1]), True))
 click = False
 
+
+
 # initializing enemy
-enemy = pygame.sprite.GroupSingle()
-start_pos2 = read(n.getPos())
-enemy.add(Player((start_pos2[0], start_pos2[1]), False))
+enemy_1 = pygame.sprite.GroupSingle()
+enemy_1.add(Player((random_pos[0], random_pos[1]), False))
+
+enemy_2 = pygame.sprite.GroupSingle()
+enemy_2.add(Player((random_pos[0], random_pos[1]), False))
+
+enemy_3 = pygame.sprite.GroupSingle()
+enemy_3.add(Player((random_pos[0], random_pos[1]), False))
+
+enemies = [enemy_1, enemy_2, enemy_3]
 
 # initializing bullet group
 bullets = pygame.sprite.Group()
 
 
 """ ==== menu screen ==== """
+
+
 
 
 # static elements - text
@@ -630,31 +646,35 @@ while True:
                                                                                                                          player.sprite.angle,
                                                                                                                          click, player.sprite.health))))))))
 
-        # updating enemy's position and health
-        enemy.sprite.rect.centerx = enemy_pos[0]
-        enemy.sprite.rect.centery = enemy_pos[1]
-        enemy.sprite.health = enemy_pos[4]
 
-        # if information is delivered about an enemy's name, save it
-        if len(enemy_pos) > 5:
-            enemy.sprite.username = enemy_pos[5]
+        for enemy, enemy_pos in zip(enemies, enemy_pos):
+
+
+            # updating enemy's position and health
+            enemy.sprite.rect.centerx = enemy_pos[0]
+            enemy.sprite.rect.centery = enemy_pos[1]
+            enemy.sprite.health = enemy_pos[4]
+
+            # if information is delivered about an enemy's name, save it
+            if len(enemy_pos) > 5:
+                enemy.sprite.username = enemy_pos[5]
+
+            # check whether to add bullets depending on shooting status of enemy
+            if enemy_pos[3]:
+                bullets.add(enemy.sprite.create_bullet())
+
+            enemy.update(enemy_pos[2])
 
         # general color to fill the screen
         screen.fill('#F7D9B4')
 
-        # check whether to add bullets depending on shooting status of enemy
-        if enemy_pos[3]:
-            bullets.add(enemy.sprite.create_bullet())
-
         # updates
         bullets.update()
         camera_group.update()
-        camera_group.custom_draw(player, enemy)
-
         player.update(pygame.mouse.get_pos())
 
-        # sends mouse cords as the enemy mouse cords from their pov plus add the difference between the players
-        enemy.update(enemy_pos[2])
+
+        camera_group.custom_draw(player, enemies)
     else:
         """ ==== game is NOT active ==== """
 

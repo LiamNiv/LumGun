@@ -215,28 +215,27 @@ try:
 except socket.error as e:
     str(e)
 
-s.listen(2)
+s.listen(4)
 print("Waiting for a connection, Server Started")
 
 rsa_helper = RSAHelper()
 
-players_online = 0
 # list for the original spawn positions
-spawn_pos = [(200, 250, 0, False, 30), (800, 250, 0, False, 30)]
+spawn_pos = [(200, 250, 0, False, 30), (200, 300, 0, False, 30),(800, 250, 0, False, 30), (800, 300, 0, False, 30)]
 # list for storing the current player positions
-pos = [spawn_pos[0], spawn_pos[1]]
+pos = [spawn_pos[0], spawn_pos[1], spawn_pos[2], spawn_pos[3]]
 # list for storing the player's usernames
-player_usernames = ['', '']
+player_usernames = ['', '', '', '']
 # list for tracking how many shots a player shot, 
 # have to use it in case two messages are received
 # for the same player in a row
-bullets_shot = [0, 0]
+bullets_shot = [[0, 0, 0, 0],[0, 0, 0, 0],[0, 0, 0, 0],[0, 0, 0, 0]]
 
 # tracking the connections
-connections = [None, None]
+connections = [None, None, None, None]
 
 # saving the AES encryption object per player
-aes_lst = [None, None]
+aes_lst = [None, None, None, None]
 
 
 def threaded_client(conn, player):
@@ -246,8 +245,8 @@ def threaded_client(conn, player):
 
     """ RSA HANDSHAKE """
 
-    print(f'==== Handshake player {[player + 1]} ===')
-
+    print(f'==== Handshake player {player + 1} ===')
+    print("bio")
     # receiving request for public key
     data = read(conn.recv(120).decode())
 
@@ -266,6 +265,7 @@ def threaded_client(conn, player):
         aes_key = rsa_helper.rsa_decrypt(encrypted_aes_key)
 
         print("8. decrypted AES key: " + str(aes_key))
+
 
     # adding to the aes object the one transferred
     aes_lst[player] = AESHelper(aes_key)
@@ -342,7 +342,7 @@ def threaded_client(conn, player):
 
     """ GAME """
 
-    reply = ""
+
     while True:
         try:
 
@@ -378,7 +378,7 @@ def threaded_client(conn, player):
                 # changes his stored pos to his spawn pos
                 pos[player] = spawn_pos[player]
                 # adds a kill to the other player
-                addKill(player_usernames[other(player)])
+                # addKill(player_usernames[other(player)])
                 # sends the dead player his spawn position
                 conn.sendall(make_cipheriv(
                     aes_lst[player].aes_encrypt(make_pos((pos[player])))))
@@ -390,29 +390,35 @@ def threaded_client(conn, player):
 
             # if a player shot a shot, add one to his shots meant for transfer
             if data[3]:
-                bullets_shot[player] += 1
+                for j in range(4):
+                    if j != player:
+                        bullets_shot[player][j] += 1
 
             # setting the reply to be the other players position
             # initializing variable for "should the other player be shooting?"
-            other_player_shooting = False
+            other_players_shooting = [False, False, False, False]
 
-            # updating the isShooting variable for the other player
-            if bullets_shot[other(player)] > 0:
-                other_player_shooting = True
-                bullets_shot[other(player)] -= 1
+            for i in range(4):
+                if bullets_shot[i][player] > 0:
+                    other_players_shooting[i] = True
+                    bullets_shot[i][player] -= 1
 
             # sending a response with all of the detail, inserting the shooting bool in the middle
-            reply = (*pos[other(player)][0:3],
-                     other_player_shooting, pos[other(player)][4])
+            replies = []
+
+            for j in range(4):
+                if j != player:
+                    replies.append((*pos[j][0:3], other_players_shooting[j], pos[j][4], player_usernames[j]))
+
 
             # server prints information
             print(f"Received from player {player + 1}: ", data)
-            print(f"Sending to player {player + 1}: ", reply)
+            print(f"Sending to player {player + 1}: ", str(replies))
 
             # sending information back to the client:
             # position and name, using protocol 4
             conn.sendall(make_cipheriv(aes_lst[player].aes_encrypt(
-                make_name((*reply, player_usernames[other(player)])))))
+                make_full_pos(replies))))
         except error as e:
             print(e)
 
@@ -424,7 +430,8 @@ def threaded_client(conn, player):
     # resetting the username
     player_usernames[player] = ''
     # resetting the count of the player
-    bullets_shot[player] = 0
+    for i in range(4):
+        bullets_shot[player][i] = 0
     # clearing connection
     connections[player] = None
     aes_lst[player] = None
@@ -438,7 +445,7 @@ while True:
 
     # finding player slots
     player_slot = -1
-    for i in range(2):
+    for i in range(4):
         if connections[i] is None:
             player_slot = i
             break
@@ -453,4 +460,3 @@ while True:
 
     start_new_thread(threaded_client, (conn, player_slot))
 
-    players_online = players_online + 1
