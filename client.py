@@ -418,10 +418,6 @@ class CameraGroup(pygame.sprite.Group):
             enemy_center_offset[0] - enemy.sprite.username_rect.w//2, enemy_center_offset[1] - 32))
 
 
-
-
-
-
 class Button(pygame.sprite.Sprite):
     """button class for the homepage "sign up / in" buttons
     doesn't handle actually being pressed, changes color if
@@ -528,7 +524,7 @@ menu_text_top_rect = menu_text_top_surf.get_rect(center=(150, 50))
 # static elements - player pic
 menu_player_surf = pygame.image.load('graphics/Player.png').convert_alpha()
 menu_player_surf = pygame.transform.scale2x(menu_player_surf)
-menu_player_rect = menu_player_surf.get_rect(center=(150, 200))
+menu_player_rect = menu_player_surf.get_rect(center=(150, 225))
 
 
 """ username """
@@ -584,32 +580,42 @@ password_box_active = False
 
 """ error message """
 
-error_height = 155
+error_height = 160
 
 msg = ""
 show_error = False
 
 # time from the start of program until error msg needs to be presented
-start_time = pygame.time.get_ticks()
+start_error_time = pygame.time.get_ticks()
 
 # tim from the start of program until current time (when msg is up)
-current_time = pygame.time.get_ticks()
+current_error_time = pygame.time.get_ticks()
 
 # the time the msg is presented, when it gets too big, the msg hides
-delta_time = start_time - current_time
+delta_error_time = current_error_time - start_error_time
 
 
 """ buttons """
 
 
 sign_in_button = pygame.sprite.GroupSingle()
-sign_in_button.add(Button(200, 260, 70, 20, 'sign in'))
+sign_in_button.add(Button(190, 180, 70, 20, 'sign in'))
 
 sign_up_button = pygame.sprite.GroupSingle()
-sign_up_button.add(Button(100, 260, 70, 20, 'sign up'))
+sign_up_button.add(Button(110, 180, 70, 20, 'sign up'))
+
+leaderboard_button = pygame.sprite.GroupSingle()
+leaderboard_button.add(Button(150, 275, 120, 20, 'leaderboard'))
+
+show_leaderboard = False
+start_leaderboard_time = pygame.time.get_ticks()
+current_leaderboard_time = pygame.time.get_ticks()
+delta_leaderboard_time = current_leaderboard_time - start_leaderboard_time
+leaders_list = []
 
 
 """ RSA HANDSHAKE """
+
 
 print('=== client ===')
 # contains methods to communicate using aes
@@ -720,7 +726,7 @@ while True:
                     else:
                         msg = 'Details don\'t match with any users'
                         show_error = True
-                        start_time = pygame.time.get_ticks()
+                        start_error_time = pygame.time.get_ticks()
                 # if the sign up button was clicked
                 if sign_up_button.sprite.button_rect.collidepoint(event.pos):
 
@@ -728,11 +734,11 @@ while True:
                     if len(username) <= 1:
                         msg = 'Username must be at least 2 letters'
                         show_error = True
-                        start_time = pygame.time.get_ticks()
+                        start_error_time = pygame.time.get_ticks()
                     elif len(password) <= 5:
                         msg = 'Password must be at least 6 letters'
                         show_error = True
-                        start_time = pygame.time.get_ticks()
+                        start_error_time = pygame.time.get_ticks()
                     # checking for servers response
                     # if the sign up request is positive
                     elif read(aes_helper.aes_decrypt(*read_cipheriv(n.send(make_cipheriv(aes_helper.aes_encrypt(make_details((username, my_sha256.hash_string(password), False)))))))):
@@ -748,7 +754,13 @@ while True:
                         msg = 'Username already taken'
                         # starting the 3000 millisecond timer to show msg
                         show_error = True
-                        start_time = pygame.time.get_ticks()
+                        start_error_time = pygame.time.get_ticks()
+                # if the show leaderboard button was clicked
+                if leaderboard_button.sprite.button_rect.collidepoint(event.pos):
+                    leaders_list = read(aes_helper.aes_decrypt(*read_cipheriv(n.send(make_cipheriv(aes_helper.aes_encrypt("a"))))))
+                    show_leaderboard = True
+                    start_leaderboard_time = pygame.time.get_ticks()
+
 
             if event.type == pygame.KEYDOWN:
                 # makes sure enter doesn't count
@@ -850,11 +862,11 @@ while True:
         if show_error:
             error_surf = pixel_font_small.render(msg, False, 'Red')
             error_rect = error_surf.get_rect(center=(150, error_height))
-            current_time = pygame.time.get_ticks()
-            delta_time = current_time - start_time
+            current_error_time = pygame.time.get_ticks()
+            delta_error_time = current_error_time - start_error_time
 
             # makes sure the error displays for only 3000 milliseconds
-            if delta_time < 3000:
+            if delta_error_time < 3000:
                 screen.blit(error_surf, error_rect)
             else:
                 show_error = False
@@ -867,6 +879,65 @@ while True:
 
         sign_up_button.sprite.update()
         sign_up_button.sprite.draw()
+
+        leaderboard_button.sprite.update()
+        leaderboard_button.sprite.draw()
+
+        if show_leaderboard:
+            current_leaderboard_time = pygame.time.get_ticks()
+            delta_leaderboard_time = current_leaderboard_time - start_leaderboard_time
+
+            if delta_leaderboard_time < 3000:
+                # transparent enabled surface
+                transparent_enabled_surface = pygame.Surface((300, 300), pygame.SRCALPHA)
+
+                # adding background blur to transparent surface
+                background_blur = pygame.Rect(0, 0, 300, 300)
+                pygame.draw.rect(transparent_enabled_surface, (150, 150, 150, 100), background_blur)
+
+                # adding black leaderboard background
+                leaderboard_background = pygame.Rect(25, 50, 250, 170)
+                pygame.draw.rect(transparent_enabled_surface, (0, 0, 0, 235), leaderboard_background)
+
+                # adding leaderboard title
+                leaderboard_title_surf = pixel_font_mid.render("- Leaderboard -", False, (255, 255, 255, 235))
+                leaderboard_title_rect = leaderboard_title_surf.get_rect(center = (150, 80))
+                transparent_enabled_surface.blit(leaderboard_title_surf, leaderboard_title_rect)
+
+                # adding usernames title
+                leaderboard_username_title_surf = pixel_font_small.render("Username:", False, (180, 180, 180, 235))
+                leaderboard_username_title_rect = leaderboard_username_title_surf.get_rect(topleft = (60, 105))
+                transparent_enabled_surface.blit(leaderboard_username_title_surf, leaderboard_username_title_rect)
+
+                # adding kills title
+                leaderboard_kills_title_surf = pixel_font_small.render("Kills:", False, (180, 180, 180, 235))
+                leaderboard_kills_title_rect = leaderboard_kills_title_surf.get_rect(topleft = (200, 105))
+                transparent_enabled_surface.blit(leaderboard_kills_title_surf, leaderboard_kills_title_rect)
+
+                for leader_tup, height, place in zip(leaders_list, range(130, 191, 30), range(1, 4)):
+                    # adding number
+                    leaderboard_username_surf = pixel_font_small.render(str(place), False, (180, 180, 180, 235))
+                    leaderboard_username_rect = leaderboard_username_surf.get_rect(topright = (45, height))
+                    transparent_enabled_surface.blit(leaderboard_username_surf, leaderboard_username_rect)
+
+                    # adding username
+                    leaderboard_username_surf = pixel_font_small.render(leader_tup[0], False, (255, 255, 255, 235))
+                    leaderboard_username_rect = leaderboard_username_surf.get_rect(topleft = (60, height))
+                    transparent_enabled_surface.blit(leaderboard_username_surf, leaderboard_username_rect)
+
+                    # adding kills
+                    leaderboard_kills_surf = pixel_font_small.render(str(leader_tup[1]), False, (255, 255, 255, 235))
+                    leaderboard_kills_rect = leaderboard_kills_surf.get_rect(topleft = (200, height))
+                    transparent_enabled_surface.blit(leaderboard_kills_surf, leaderboard_kills_rect)
+
+
+
+                screen.blit(transparent_enabled_surface, (0,0))
+            else:
+                show_leaderboard = False
+
+
+
 
     # draw all our elements
     # update everything

@@ -8,6 +8,8 @@ general protocol headers
 6: handshake - client requesting to get the server's public key, not stripped
 7: public key being sent from the server to the client
 8: encrypted aes key being sent back to the server
+a: request from client for getting the top 3 leaderboard
+b: message from server with the top 3 leader board. list len 3 containing tuples with username and kill count
 """
 
 
@@ -33,6 +35,10 @@ def read(data):
             return read_public_key(data)
         elif first_letter == '8':
             return read_encrypted_key(data)
+        elif first_letter == 'a':
+            return "a"
+        elif first_letter == "b":
+            return read_leaderboard(data)
         else:
             print('invalid protocol head-number: ' + first_letter)
             return 'Protocol Fail'
@@ -107,7 +113,7 @@ def read_pos(data):
         else:
             return int(data[0]), int(data[1]), int(float(data[2])), False, int(data[4])
     except Exception as e:
-        print(f"An error occurred: {e} ===1===")
+        print(f"An error occurred: {e}")
         return 'Protocol Fail'
 
 # makes  data of player's game position and status from string
@@ -131,7 +137,7 @@ def make_pos(data):
         else:
             return f'2{str(data[0])},{str(data[1])},{str(data[2])},False,{str(data[4])}'
     except Exception as e:
-        print(f"An error occurred: {e} ===2===")
+        print(f"An error occurred: {e}")
         return 'Protocol Fail'
 
 
@@ -184,8 +190,6 @@ def make_ans(data):
 
 """ ==== 4 ==== """
 
-# reading enemy's name and game status from string
-
 
 def read_sub_full_pos(data):
     """converts string data about the players position and username to individual variables
@@ -204,10 +208,8 @@ def read_sub_full_pos(data):
         else:
             return int(data[0]), int(data[1]), int(float(data[2])), False, int(data[4]), data[5]
     except Exception as e:
-        print(f"An error occurred: {e} ===3===")
+        print(f"An error occurred: {e}")
         return 'Protocol Fail'
-
-# making string of other persons name + game status
 
 
 def make_sub_full_pos(data):
@@ -227,7 +229,7 @@ def make_sub_full_pos(data):
             ret = f"{data[0]},{data[1]},{data[2]},False,{data[4]},{data[5]}"
             return ret
     except Exception as e:
-        print(f"An error occurred: {e} ===4===")
+        print(f"An error occurred: {e}")
         return 'Protocol Fail'
 
 
@@ -239,12 +241,16 @@ def read_full_pos(data):
             full_details_list.append(read_sub_full_pos(sub_name))
         return full_details_list
     except Exception as e:
-        print(f"An error occurred: {e} ===5===")
+        print(f"An error occurred: {e}")
         return 'Protocol Fail'
     
 
 def make_full_pos(data):
-    return f'4{make_sub_full_pos(data[0])}.{make_sub_full_pos(data[1])}.{make_sub_full_pos(data[2])}'
+    try:
+        return f'4{make_sub_full_pos(data[0])}.{make_sub_full_pos(data[1])}.{make_sub_full_pos(data[2])}'
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return 'Protocol Fail'
 
 
 """ ==== 5 ==== """
@@ -327,6 +333,44 @@ def make_encrypted_key(data):
     """
     try:
         return f"8{data}"
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return 'Protocol Fail'
+
+
+" ==== b ==== "
+
+def read_leaderboard(data):
+    try:
+        data = data.split(".")
+        leaderboard_list = []
+        for user in data:
+            leaderboard_list.append(read_leaderboard_user(user))
+        return leaderboard_list
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return 'Protocol Fail'
+
+
+def read_leaderboard_user(data):
+    try:
+        data = data.split(",")
+        return data[0], int(data[1])
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return 'Protocol Fail'
+
+
+def make_leaderboard(data):
+    try:
+        return f"b{make_leaderboard_user(data[0])}.{make_leaderboard_user(data[1])}.{make_leaderboard_user(data[2])}"
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return 'Protocol Fail'
+
+def make_leaderboard_user(data):
+    try:
+        return f"{data[0]},{str(data[1])}"
     except Exception as e:
         print(f"An error occurred: {e}")
         return 'Protocol Fail'

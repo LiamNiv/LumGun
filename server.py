@@ -221,7 +221,7 @@ print("Waiting for a connection, Server Started")
 rsa_helper = RSAHelper()
 
 # list for the original spawn positions
-spawn_pos = [(200, 250, 0, False, 30), (200, 300, 0, False, 30),(800, 250, 0, False, 30), (800, 300, 0, False, 30)]
+spawn_pos = [(200, 170, 0, False, 30), (800, 330, 0, False, 30), (200, 330, 0, False, 30), (800, 170, 0, False, 30)]
 # list for storing the current player positions
 pos = [spawn_pos[0], spawn_pos[1], spawn_pos[2], spawn_pos[3]]
 # list for storing the player's usernames
@@ -300,6 +300,14 @@ def threaded_client(conn, player):
             break
 
         print(f"Received from player {player + 1}: ", data)
+
+        if data == "a":
+            leaderboard = make_leaderboard(getLeaderboard())
+            conn.sendall(make_cipheriv(
+                    aes_lst[player].aes_encrypt(leaderboard)))
+            print(f"Sending to player {player + 1}: {leaderboard}")
+            continue
+
 
         # if the request is for signing in
         if data[2]:
