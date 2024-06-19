@@ -119,3 +119,20 @@ def getKills(username):
         for user in user_list:
             if user["username"] == username:
                 return user["kills"]
+
+
+def getLeaderboard():
+    """returns the top 3 users along with their kills
+
+    Returns:
+        list: list of 3 tuples, each tuple containing username and kill count
+    """
+    with open("database.json") as f:
+        data = json.load(f)
+        user_dict_list = data["users"]
+        user_kills_tup_list = []
+        for user in user_dict_list:
+            user_kills_tup_list.append((user["username"], user["kills"]))
+        sorted_list = sorted(user_kills_tup_list, key=lambda x: x[1], reverse=True)
+        return sorted_list[:3]
+
