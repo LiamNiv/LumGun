@@ -4,7 +4,7 @@ general protocol headers
 2: player game status (pos_x, posy, angle, isShooting, health)
 3: an answer to a request to log in (isValid)
 4: player game status (like 2) + enemy's name 
-5: this digit simply marks the player requesting his original spawn position from the server, will not be stripped, only '5' will be sent
+5: this digit simply marks the player requesting his original spawn position from the server, with the player username that killed him
 6: handshake - client requesting to get the server's public key, not stripped
 7: public key being sent from the server to the client
 8: encrypted aes key being sent back to the server
@@ -26,7 +26,7 @@ def read(data):
         elif first_letter == '4':
             return read_full_pos(data)
         elif first_letter == '5':
-            return '5'
+            return read_death(data)
         elif first_letter == '6':
             return '6'
         elif first_letter == '7':
@@ -246,7 +246,17 @@ def read_full_pos(data):
 def make_full_pos(data):
     return f'4{make_sub_full_pos(data[0])}.{make_sub_full_pos(data[1])}.{make_sub_full_pos(data[2])}'
 
-""" ==== 7 ====="""
+
+""" ==== 5 ==== """
+
+def read_death(data):
+    return data
+
+def make_death(data):
+    return f'5{data}'
+
+
+""" ==== 7 ==== """
 
 # reads the public key being sent to the client from string
 

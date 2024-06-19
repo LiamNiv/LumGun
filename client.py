@@ -99,6 +99,9 @@ class Player(pygame.sprite.Sprite):
             self.username, False, 'Black')
         self.username_rect = self.username_surf.get_rect(
             center=(self.rect.centerx, self.rect.centery - 30))
+        
+        # tracking the player who shot the player last
+        self.last_hit_username = ""
 
     def set_username(self, username):
         """sets the username to be what is requested
@@ -210,8 +213,11 @@ class Player(pygame.sprite.Sprite):
             bullet_group (Group): the sprite group containing all of the bullets
         """
         # makes sure the player being hit is only the main one, enemy health is sent
-        if pygame.sprite.spritecollide(self, bullet_group, True, pygame.sprite.collide_mask) and self.isUser:
+        colliding_bullets = pygame.sprite.spritecollide(self, bullet_group, True, pygame.sprite.collide_mask)
+        if colliding_bullets and self.isUser:
             if self.health != 0:
+                if self.health == 1:
+                    self.last_hit_username = colliding_bullets[0].shooter_username
                 self.health -= 1
 
     def die(self):
@@ -223,7 +229,7 @@ class Player(pygame.sprite.Sprite):
         # sending the sever a message meaning death
         # and receiving the cords to re-spawn
         spawn_pos = read(aes_helper.aes_decrypt(
-            *read_cipheriv(n.send(make_cipheriv(aes_helper.aes_encrypt('5'))))))
+            *read_cipheriv(n.send(make_cipheriv(aes_helper.aes_encrypt(make_death(self.last_hit_username)))))))
 
         self.rect.centerx = spawn_pos[0]
         self.rect.centery = spawn_pos[1]
@@ -276,6 +282,8 @@ class Bullet(pygame.sprite.Sprite):
         self.angle = player.angle
 
         self.magnitude = 10
+
+        self.shooter_username = player.username
 
         # rotates the image
         self.image = pygame.transform.rotate(

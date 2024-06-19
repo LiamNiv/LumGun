@@ -373,12 +373,12 @@ def threaded_client(conn, player):
                 # leave game loop
                 break
 
-            # if the player reports about his own death
-            if data == '5':
+            # if the player reports about his own death, meaning he sent the make of his killer
+            if isinstance(data, str):
                 # changes his stored pos to his spawn pos
                 pos[player] = spawn_pos[player]
                 # adds a kill to the other player
-                # addKill(player_usernames[other(player)])
+                addKill(data)
                 # sends the dead player his spawn position
                 conn.sendall(make_cipheriv(
                     aes_lst[player].aes_encrypt(make_pos((pos[player])))))
