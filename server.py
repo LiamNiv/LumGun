@@ -388,10 +388,12 @@ def threaded_client(conn, player):
                 # storing the players position into the pos list
                 pos[player] = data
 
-            # if a player shot a shot, add one to his shots meant for transfer
+            # if a player shot a shot, add one to his own list index, for the other players to see
             if data[3]:
                 for j in range(4):
-                    if j != player:
+                    # in the index of the player, adding one to 
+                    # all other players' indexes if they are online
+                    if j != player and player_usernames[j] != "":
                         bullets_shot[player][j] += 1
 
             # setting the reply to be the other players position
@@ -403,7 +405,7 @@ def threaded_client(conn, player):
                     other_players_shooting[i] = True
                     bullets_shot[i][player] -= 1
 
-            # sending a response with all of the detail, inserting the shooting bool in the middle
+            # making a list of all player details
             replies = []
 
             for j in range(4):
