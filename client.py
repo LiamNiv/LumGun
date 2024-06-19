@@ -378,21 +378,12 @@ class CameraGroup(pygame.sprite.Group):
             enemy_offset = enemy.sprite.rect.topleft - self.offset
             self.display_surface.blit(enemy.sprite.image, enemy_offset)
 
-            # blitting enemy health
-            enemy_center_offset = enemy.sprite.rect.center - self.offset
-            self.display_surface.blit(enemy.sprite.health_bar_background,
-                                    (enemy_center_offset[0] - 15, enemy_center_offset[1] - 22))
-            self.display_surface.blit(enemy.sprite.health_bar_health,
-                                    (enemy_center_offset[0] - 15, enemy_center_offset[1] - 22))
-            
-            # blitting enemy username
-            self.display_surface.blit(enemy.sprite.username_surf, (
-            enemy_center_offset[0] - enemy.sprite.username_rect.w//2, enemy_center_offset[1] - 32))
 
         # blitting all of the obstacles on the map
         for sprite in self.sprites():
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_pos)
+
 
         # blitting player health
         player_center_offset = player.sprite.rect.center - self.offset
@@ -404,6 +395,21 @@ class CameraGroup(pygame.sprite.Group):
         # blitting player username
         self.display_surface.blit(player.sprite.username_surf, (
             player_center_offset[0] - player.sprite.username_rect.w//2, player_center_offset[1] - 32))
+
+
+        for enemy in enemies:
+            # blitting enemy health
+            enemy_center_offset = enemy.sprite.rect.center - self.offset
+            self.display_surface.blit(enemy.sprite.health_bar_background,
+                                    (enemy_center_offset[0] - 15, enemy_center_offset[1] - 22))
+            self.display_surface.blit(enemy.sprite.health_bar_health,
+                                    (enemy_center_offset[0] - 15, enemy_center_offset[1] - 22))
+            
+            # blitting enemy username
+            self.display_surface.blit(enemy.sprite.username_surf, (
+            enemy_center_offset[0] - enemy.sprite.username_rect.w//2, enemy_center_offset[1] - 32))
+
+
 
 
 
