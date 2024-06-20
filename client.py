@@ -468,6 +468,7 @@ n = Network()
 pygame.init()
 screen = pygame.display.set_mode((300, 300))  # screen size
 pygame.display.set_caption('LumGun')  # give window title
+pygame.display.set_icon(pygame.image.load("graphics/Icon.png"))
 clock = pygame.time.Clock()  # setting clock
 
 # bool for game activeness

@@ -24,6 +24,7 @@ pygame.init()
 
 screen = pygame.display.set_mode((600, 300))  # screen size
 pygame.display.set_caption('LumGun - Server')  # give window title
+pygame.display.set_icon(pygame.image.load("graphics/Icon.png"))
 clock = pygame.time.Clock()  # setting clock
 
 give_access = False
