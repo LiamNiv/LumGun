@@ -247,7 +247,7 @@ def threaded_client(conn, player):
     """ RSA HANDSHAKE """
 
     print(f'==== Handshake player {player + 1} ===')
-    print("bio")
+
     # receiving request for public key
     data = read(conn.recv(120).decode())
 
