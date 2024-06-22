@@ -82,9 +82,9 @@ def make_details(data):
 
     try:
         if data[2]:
-            return '1' + str(data[0]) + ',' + str(data[1]) + ',' + 'True'
+            return f"1{str(data[0])},{str(data[1])},True"
         else:
-            return '1' + str(data[0]) + ',' + str(data[1]) + ',' + 'False'
+            return f"1{str(data[0])},{str(data[1])},False"
     except Exception as e:
         print(f"An error occurred: {e}")
         return 'Protocol Fail'
@@ -180,9 +180,9 @@ def make_ans(data):
 
     try:
         if data:
-            return '3' + 'True'
+            return '3True'
         else:
-            return '3' + 'False'
+            return '3False'
     except Exception as e:
         print(f"An error occurred: {e}")
         return 'Protocol Fail'
