@@ -220,7 +220,7 @@ bullets_shot = [[0, 0, 0, 0],[0, 0, 0, 0],[0, 0, 0, 0],[0, 0, 0, 0]]
 connections = [None, None, None, None]
 
 # saving the AES encryption object per player
-aes_lst = [None, None, None, None]
+aes_helper_list = [None, None, None, None]
 
 
 def threaded_client(conn, player):
@@ -253,7 +253,7 @@ def threaded_client(conn, player):
 
 
     # adding to the aes object the one transferred
-    aes_lst[player] = AESHelper(aes_key)
+    aes_helper_list[player] = AESHelper(aes_key)
 
     # adding the connection
     connections[player] = conn
@@ -275,7 +275,7 @@ def threaded_client(conn, player):
         print("==== Menu ====")
         print(f"Received from player {player + 1} [encrypted]: ", data)
 
-        data = read(aes_lst[player].aes_decrypt(*read_cipheriv(data)))
+        data = read(aes_helper_list[player].aes_decrypt(*read_cipheriv(data)))
 
         # if the data received doesn't follow protocol, than disconnect him
         if data == 'Protocol Fail':
@@ -289,7 +289,7 @@ def threaded_client(conn, player):
         if data == "a":
             leaderboard = make_leaderboard(getLeaderboard())
             conn.sendall(make_cipheriv(
-                    aes_lst[player].aes_encrypt(leaderboard)))
+                    aes_helper_list[player].aes_encrypt(leaderboard)))
             print(f"Sending to player {player + 1}: {leaderboard}")
             continue
 
@@ -300,7 +300,7 @@ def threaded_client(conn, player):
             if isValid(data[0], data[1]):
                 # send True back
                 conn.sendall(make_cipheriv(
-                    aes_lst[player].aes_encrypt(make_ans(True))))
+                    aes_helper_list[player].aes_encrypt(make_ans(True))))
                 # go to game loop
                 print(f"Sending to player {player + 1}: True")
                 break
@@ -308,7 +308,7 @@ def threaded_client(conn, player):
             else:
                 # send False
                 conn.sendall(make_cipheriv(
-                    aes_lst[player].aes_encrypt(make_ans(False))))
+                    aes_helper_list[player].aes_encrypt(make_ans(False))))
                 # redo the loop
                 print(f"Sending to player {player + 1}: False")
                 continue
@@ -317,13 +317,13 @@ def threaded_client(conn, player):
             # if signing up was successful
             if signUp(data[0], data[1]):
                 conn.sendall(make_cipheriv(
-                    aes_lst[player].aes_encrypt(make_ans(True))))
+                    aes_helper_list[player].aes_encrypt(make_ans(True))))
                 # go to game loop
                 print(f"Sending to player {player + 1}: True")
                 break
             else:
                 conn.sendall(make_cipheriv(
-                    aes_lst[player].aes_encrypt(make_ans(False))))
+                    aes_helper_list[player].aes_encrypt(make_ans(False))))
                 # redo the loop
                 print(f"Sending to player {player + 1}: False")
                 continue
@@ -356,7 +356,7 @@ def threaded_client(conn, player):
             print("==== Game ====")
             print(f"Received from player {player + 1} [encrypted]: ", data)
 
-            data = read(aes_lst[player].aes_decrypt(*read_cipheriv(data)))
+            data = read(aes_helper_list[player].aes_decrypt(*read_cipheriv(data)))
 
             # if the data received doesn't follow protocol
             if data == 'Protocol Fail':
@@ -374,7 +374,7 @@ def threaded_client(conn, player):
                 addKill(data)
                 # sends the dead player his spawn position
                 conn.sendall(make_cipheriv(
-                    aes_lst[player].aes_encrypt(make_pos((pos[player])))))
+                    aes_helper_list[player].aes_encrypt(make_pos((pos[player])))))
                 continue
             # if its not a death the server will continue like normal
             else:
@@ -399,21 +399,21 @@ def threaded_client(conn, player):
                     bullets_shot[i][player] -= 1
 
             # making a list of all player details
-            replies = []
+            reply = []
 
             for j in range(4):
                 if j != player:
-                    replies.append((*pos[j][0:3], other_players_shooting[j], pos[j][4], player_usernames[j]))
+                    reply.append((*pos[j][0:3], other_players_shooting[j], pos[j][4], player_usernames[j]))
 
 
             # server prints information
             print(f"Received from player {player + 1}: ", data)
-            print(f"Sending to player {player + 1}: ", str(replies))
+            print(f"Sending to player {player + 1}: ", str(reply))
 
             # sending information back to the client:
             # position and name, using protocol 4
-            conn.sendall(make_cipheriv(aes_lst[player].aes_encrypt(
-                make_full_pos(replies))))
+            conn.sendall(make_cipheriv(aes_helper_list[player].aes_encrypt(
+                make_full_pos(reply))))
         except error as e:
             print(e)
 
@@ -429,7 +429,7 @@ def threaded_client(conn, player):
         bullets_shot[player][i] = 0
     # clearing connection
     connections[player] = None
-    aes_lst[player] = None
+    aes_helper_list[player] = None
     conn.close()
 
 
