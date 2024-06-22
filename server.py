@@ -195,22 +195,6 @@ port = 5555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-
-def other(p):
-    """returns the value of the other player
-
-    Args:
-        p (int): 0 or 1, the number of a player
-
-    Returns:
-        int: 0 or 1, whatever p isn't
-    """
-    if p == 0:
-        return 1
-    else:
-        return 0
-
-
 try:
     s.bind((accept_all_connections_ip, port))
 except socket.error as e:
