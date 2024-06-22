@@ -489,8 +489,6 @@ player = pygame.sprite.GroupSingle()
 player.add(Player((random_pos[0], random_pos[1]), True))
 click = False
 
-
-
 # initializing enemy
 enemy_1 = pygame.sprite.GroupSingle()
 enemy_1.add(Player((random_pos[0], random_pos[1]), False))
@@ -510,8 +508,6 @@ bullets = pygame.sprite.Group()
 """ ==== menu screen ==== """
 
 
-
-
 # static elements - text
 # fonts
 pixel_font_small = pygame.font.Font('font/Pixeltype.ttf', 25)
@@ -529,6 +525,7 @@ menu_player_rect = menu_player_surf.get_rect(center=(150, 225))
 
 
 """ username """
+
 
 username_box_height = 100
 
@@ -555,6 +552,7 @@ username_box_active = False
 
 
 """ password """
+
 
 password_box_height = 130
 
@@ -667,9 +665,7 @@ while True:
                                                                                                                          player.sprite.angle,
                                                                                                                          click, player.sprite.health))))))))
 
-
         for enemy, enemy_pos in zip(enemies, enemy_pos):
-
 
             # updating enemy's position and health
             enemy.sprite.rect.centerx = enemy_pos[0]
