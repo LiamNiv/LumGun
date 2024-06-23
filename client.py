@@ -249,7 +249,8 @@ class Player(pygame.sprite.Sprite):
         self.face_mouse(angle_info)
         self.border_collision()
         self.obstacle_collision()
-        self.bullet_collision(bullets)
+        if self.username != "":
+            self.bullet_collision(bullets)
 
         if self.health == 0 and self.isUser:
             self.die()
@@ -382,9 +383,10 @@ class CameraGroup(pygame.sprite.Group):
 
         
         for enemy in enemies:
-            # blitting enemy
-            enemy_offset = enemy.sprite.rect.topleft - self.offset
-            self.display_surface.blit(enemy.sprite.image, enemy_offset)
+            if enemy.sprite.username != "":
+                # blitting enemy
+                enemy_offset = enemy.sprite.rect.topleft - self.offset
+                self.display_surface.blit(enemy.sprite.image, enemy_offset)
 
 
         # blitting all of the obstacles on the map
@@ -406,16 +408,17 @@ class CameraGroup(pygame.sprite.Group):
 
 
         for enemy in enemies:
-            # blitting enemy health
-            enemy_center_offset = enemy.sprite.rect.center - self.offset
-            self.display_surface.blit(enemy.sprite.health_bar_background,
-                                    (enemy_center_offset[0] - 15, enemy_center_offset[1] - 22))
-            self.display_surface.blit(enemy.sprite.health_bar_health,
-                                    (enemy_center_offset[0] - 15, enemy_center_offset[1] - 22))
-            
-            # blitting enemy username
-            self.display_surface.blit(enemy.sprite.username_surf, (
-            enemy_center_offset[0] - enemy.sprite.username_rect.w//2, enemy_center_offset[1] - 32))
+            if enemy.sprite.username != "":
+                # blitting enemy health
+                enemy_center_offset = enemy.sprite.rect.center - self.offset
+                self.display_surface.blit(enemy.sprite.health_bar_background,
+                                        (enemy_center_offset[0] - 15, enemy_center_offset[1] - 22))
+                self.display_surface.blit(enemy.sprite.health_bar_health,
+                                        (enemy_center_offset[0] - 15, enemy_center_offset[1] - 22))
+                
+                # blitting enemy username
+                self.display_surface.blit(enemy.sprite.username_surf, (
+                enemy_center_offset[0] - enemy.sprite.username_rect.w//2, enemy_center_offset[1] - 32))
 
 
 class Button(pygame.sprite.Sprite):
