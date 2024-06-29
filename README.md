@@ -28,3 +28,12 @@ To get started with LumGun, follow these steps:
     ```bash
     pip install pygame sympy pycryptodome
     ```
+
+## Setup
+
+:red_circle: **Admin Password:** The admin password for opening a server is `'michal2506'`
+
+Make sure the IP address in the network.py, is the IP of the local server you want to connect to.
+```python
+self.server = "192.168.10.128"
+```
