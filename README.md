@@ -1,4 +1,4 @@
-# LumGun
+![LumGun](README_title_image.png)
 
 ## Overview
 
