@@ -31,7 +31,7 @@ To get started with LumGun, follow these steps:
 
 ## Setup
 
-:red_circle: **Admin Password:** The admin password for opening a server is `'michal2506'`
+:red_circle: **Admin Password:** The admin password for opening a server is `'qwertyuiop'`
 
 Make sure the IP address in the network.py, is the IP of the local server you want to connect to.
 ```python

@@ -114,7 +114,7 @@ while not give_access:
                             password += event.unicode
                             censored_password = '*' * len(password)
             else:
-                if my_sha256.hash_string(password) == "8e0bdd994d9c0b4a093fa172c049788cfdcdea8a0133bad4abc511ac6189fc48":
+                if my_sha256.hash_string(password) == "9a900403ac313ba27a1bc81f0932652b8020dac92c234d98fa0b06bf0040ecfd":
                     give_access = True
                 else:
                     # change the msg
